@@ -36,14 +36,7 @@ class HelloWorldInstaller extends InstallerAbstract
                     ActionRenderAbstractFactory::KEY_RENDER_MIDDLEWARE_SERVICE => 'simpleHtmlJsonRendererLLPipe'
                 ]
             ],
-            'routes' => [
-                [
-                    'name' => 'home-page',
-                    'path' => '/',
-                    'middleware' => 'home-service',
-                    'allowed_methods' => ['GET'],
-                ],
-            ],
+
         ];
     }
 
