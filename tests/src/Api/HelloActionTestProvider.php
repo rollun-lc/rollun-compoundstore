@@ -19,23 +19,11 @@ class HelloActionTestProvider extends PHPUnit_Framework_TestCase
     {
         return [
             [
-                "world", "dev", "[dev] Hello world!", 'text/html'
+                "dev", "[dev] Hello !", 'text/html'
             ],
             [
-                "", "dev", "[dev] Hello !", 'text/html'
+                "dev", "[dev] Hello !", 'application/json'
             ],
-            [
-                "world", "dev", "[dev] Hello world!", 'application/json'
-            ],
-            [
-                "", "dev", "[dev] Hello !", 'application/json'
-            ],
-            [
-                "error", "dev", 'Exception: Exception by string: [dev] Hello error! in file', 'text/html'
-            ],
-            [
-                "error", "dev", 'Exception: Exception by string: [dev] Hello error! in file', 'application/json'
-            ]
         ];
     }
 
@@ -43,19 +31,10 @@ class HelloActionTestProvider extends PHPUnit_Framework_TestCase
     {
         return [
             [
-                "world", "prod", "[prod] Hello world!", 'text/html'
+                "prod", "[prod] Hello !", 'text/html'
             ],
             [
-                "", "prod", "[prod] Hello !", 'text/html'
-            ],
-            [
-                "world", "prod", "[prod] Hello world!", 'application/json'
-            ],
-            [
-                "", "prod", "[prod] Hello !", 'application/json'
-            ],
-            [
-                "error", "prod", 'We encountered a 500 Internal Server Error error.', 'text/html'
+                "prod", "[prod] Hello !", 'application/json'
             ],
         ];
     }
