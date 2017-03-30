@@ -1,4 +1,5 @@
 <?php
+
 namespace rollun\test\skeleton\Callback;
 
 use rollun\callback\Callback\Callback;

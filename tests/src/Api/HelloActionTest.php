@@ -9,7 +9,6 @@
 namespace rollun\test\skeleton\Api;
 
 use PHPUnit_Framework_TestCase;
-use rollun\skeleton\Api\HelloAction;
 use Zend\Http\Client;
 
 class HelloActionTest extends HelloActionTestProvider
@@ -30,9 +29,9 @@ class HelloActionTest extends HelloActionTestProvider
      * @param $accept
      * @dataProvider providerDevQuery()
      */
-    public function testDevQuery($param, $env, $response, $accept)
+    public function testDevQuery($env, $response, $accept)
     {
-        $uri = "http://" . constant("HOST") . "/" . $param;
+        $uri = "http://" . constant("HOST") . "/";
         $this->client->setUri($uri);
         $this->client->setHeaders([
             'Accept' => $accept,
@@ -50,9 +49,9 @@ class HelloActionTest extends HelloActionTestProvider
      * @param $accept
      * @dataProvider providerProdQuery()
      */
-    public function testProdQuery($param, $env, $response, $accept)
+    public function testProdQuery($env, $response, $accept)
     {
-        $uri = "http://" . constant("HOST") . "/" . $param;
+        $uri = "http://" . constant("HOST") . "/";
         $this->client->setUri($uri);
         $this->client->setHeaders([
             'Accept' => $accept,
