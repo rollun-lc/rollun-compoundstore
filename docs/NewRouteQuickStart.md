@@ -6,12 +6,13 @@
 Давайте посмотрим на сам конфиг:
 
 ```php
-    [
-        'name' => '',
-        'path' => '',
-        'middleware' => '',
-        'allowed_methods' => ['GET', 'POST'],
-    ],
+
+    $app->route(
+        '/', //path
+        'home-service', //middleware
+        ['GET'], //allowed_methods
+        'home-page' //name
+    );
 ```
 
 * **name** - Имя роута.
