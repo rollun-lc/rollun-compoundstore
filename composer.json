@@ -46,12 +46,12 @@
   },
   "autoload": {
     "psr-4": {
-      "rollun\\skeleton\\": "src/"
+      "rollun\\skeleton\\": "src/App/src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "rollun\\test\\skeleton\\": "tests/src"
+      "rollun\\test\\skeleton\\": "test/App"
     }
   },
   "scripts": {
