@@ -35,7 +35,8 @@
     "rollun-com/rollun-callback": "^4.0",
     "rollun-com/rollun-api": "^3.0",
     "zendframework/zend-http": "^2.5",
-    "rollun-com/rollun-permission": "^2.0"
+    "rollun-com/rollun-permission": "^2.0",
+    "zendframework/zend-i18n": "^2.7"
   },
   "require-dev": {
     "phpunit/phpunit": "^5.7.15",
@@ -46,7 +47,7 @@
   },
   "autoload": {
     "psr-4": {
-      "rollun\\skeleton\\": "src/App/src"
+      "rollun\\test\\": "src/Test/src"
     }
   },
   "autoload-dev": {
