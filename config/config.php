@@ -11,9 +11,13 @@ $cacheConfig = [
 ];
 
 $aggregator = new ConfigAggregator([
+    \Zend\Filter\ConfigProvider::class,
+    \Zend\Cache\ConfigProvider::class,
+    \Zend\Mail\ConfigProvider::class,
     \Zend\Session\ConfigProvider::class,
-    // Include cache configuration
+    \rollun\test\ConfigProvider::class,
     \rollun\actionrender\ConfigProvider::class,
+    // Include cache configuration
     new ArrayProvider($cacheConfig),
 
     // Default App module config
