@@ -1,6 +1,6 @@
 {
-  "name": "rollun-com/rollun-skeleton",
-  "description": "Skeleton for app or lib",
+  "name": "rollun-com/rollun-compoundstore",
+  "description": "CompoundStore realization.",
   "minimum-stability": "stable",
   "license": "proprietary",
   "type": "project",
@@ -47,12 +47,12 @@
   },
   "autoload": {
     "psr-4": {
-      "rollun\\test\\": "src/Test/src"
+      "rollun\\compoundstore\\": "src/Compoundstore/src"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "rollun\\test\\skeleton\\": "test/App"
+      "rollun\\test\\compoundstore\\": "test/compoundstore"
     }
   },
   "scripts": {
