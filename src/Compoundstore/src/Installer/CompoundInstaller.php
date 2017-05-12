@@ -11,6 +11,7 @@ namespace rollun\compoundstore\Installer;
 
 use Composer\IO\IOInterface;
 use Interop\Container\ContainerInterface;
+use rollun\datastore\Middleware\DataStoreMiddlewareInstaller;
 use rollun\installer\Install\InstallerAbstract;
 use rollun\datastore\DataStore\DbTable;
 use rollun\datastore\TableGateway\DbSql\MultiInsertSql;
@@ -117,7 +118,7 @@ class CompoundInstaller extends InstallerAbstract
                 $tableManager->createTable(SysEntities::TABLE_NAME);
             }
             return [
-                'services' => [
+                'dependencies' => [
                     'aliases' => [
                         CompoundAbstractFactory::DB_SERVICE_NAME => 'db',
                     ],
@@ -175,7 +176,8 @@ class CompoundInstaller extends InstallerAbstract
     public function getDependencyInstallers()
     {
         return [
-            DbInstaller::class
+            DbInstaller::class,
+            DataStoreMiddlewareInstaller::class,
         ];
     }
 }

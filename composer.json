@@ -52,7 +52,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "rollun\\test\\compoundstore\\": "test/compoundstore"
+      "rollun\\test\\compoundstore\\": "test/Compoundstore"
     }
   },
   "scripts": {
