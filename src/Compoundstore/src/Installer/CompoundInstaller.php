@@ -9,18 +9,22 @@
 
 namespace rollun\compoundstore\Installer;
 
-use Composer\IO\IOInterface;
-use Interop\Container\ContainerInterface;
-use rollun\datastore\Middleware\DataStoreMiddlewareInstaller;
-use rollun\installer\Install\InstallerAbstract;
-use rollun\datastore\DataStore\DbTable;
-use rollun\datastore\TableGateway\DbSql\MultiInsertSql;
-use rollun\utils\DbInstaller;
-use Zend\Db\Adapter\AdapterInterface;
-use rollun\datastore\TableGateway\TableManagerMysql as TableManager;
-use rollun\compoundstore\SysEntities;
+use rollun\compoundstore\Entity;
 use rollun\compoundstore\Example\StoreCatalog;
 use rollun\compoundstore\Factory\CompoundAbstractFactory;
+use rollun\compoundstore\Prop;
+use rollun\compoundstore\SysEntities;
+use rollun\compoundstore\TypeEntityList;
+use rollun\datastore\DataStore\DbTable;
+use rollun\datastore\DataStore\Installers\DbTableInstaller;
+use rollun\datastore\DataStore\Installers\HttpClientInstaller;
+use rollun\datastore\Middleware\DataStoreMiddlewareInstaller;
+use rollun\datastore\TableGateway\DbSql\MultiInsertSql;
+use rollun\datastore\TableGateway\TableManagerMysql as TableManager;
+use rollun\installer\Install\InstallerAbstract;
+use rollun\utils\DbInstaller;
+use rollun\utils\Json\Exception;
+use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\TableGateway\TableGateway;
 
 /**
@@ -61,7 +65,7 @@ class CompoundInstaller extends InstallerAbstract
             isset($config['services']['abstract_factories']) &&
             in_array(CompoundAbstractFactory::class, $config['services']['abstract_factories']) &&
             $this->container->has(CompoundAbstractFactory::DB_SERVICE_NAME)
-            );
+        );
     }
 
     public function uninstall()
@@ -79,6 +83,7 @@ class CompoundInstaller extends InstallerAbstract
                 $tableManager->deleteTable(StoreCatalog::CATEGORY_TABLE_NAME);
                 $tableManager->deleteTable(StoreCatalog::TAG_TABLE_NAME);
                 $tableManager->deleteTable(SysEntities::TABLE_NAME);
+                $tableManager->deleteTable(TypeEntityList::TABLE_NAME);
             } else {
                 $this->consoleIO->write('constant("APP_ENV") !== "dev" It has did nothing');
             }
@@ -93,12 +98,14 @@ class CompoundInstaller extends InstallerAbstract
                 //develop only
                 $tablesConfigDevelop = [
                     TableManager::KEY_TABLES_CONFIGS => array_merge(
-                        SysEntities::getTableConfigProdaction(),
+                        TypeEntityList::getTableConfigProduction(),
+                        SysEntities::getTableConfigProduction(),
                         StoreCatalog::$develop_tables_config
                     )
                 ];
                 $tableManager = new TableManager($this->dbAdapter, $tablesConfigDevelop);
 
+                $tableManager->rewriteTable(TypeEntityList::TABLE_NAME);
                 $tableManager->rewriteTable(SysEntities::TABLE_NAME);
                 $tableManager->rewriteTable(StoreCatalog::PRODUCT_TABLE_NAME);
                 $tableManager->rewriteTable(StoreCatalog::TAG_TABLE_NAME);
@@ -108,13 +115,17 @@ class CompoundInstaller extends InstallerAbstract
                 $tableManager->rewriteTable(StoreCatalog::PROP_LINKED_URL_TABLE_NAME);
                 $tableManager->rewriteTable(StoreCatalog::PROP_PRODUCT_CATEGORY_TABLE_NAME);
                 $tableManager->rewriteTable(StoreCatalog::PROP_TAG_TABLE_NAME);
-                $this->addData();
+                $this->tableDataWrite();
             } else {
-                $tablesConfigProdaction = [
-                    TableManager::KEY_TABLES_CONFIGS => SysEntities::getTableConfigProdaction()
+                $tablesConfigProduction = [
+                    TableManager::KEY_TABLES_CONFIGS => array_merge(
+                        TypeEntityList::getTableConfigProduction(),
+                        SysEntities::getTableConfigProduction()
+                    )
                 ];
-                $tableManager = new TableManager($this->dbAdapter, $tablesConfigProdaction);
+                $tableManager = new TableManager($this->dbAdapter, $tablesConfigProduction);
 
+                $tableManager->rewriteTable(TypeEntityList::TABLE_NAME);
                 $tableManager->createTable(SysEntities::TABLE_NAME);
             }
             return [
@@ -131,28 +142,39 @@ class CompoundInstaller extends InstallerAbstract
         return [];
     }
 
-    public function addData()
+    public function tableDataWrite()
     {
         if (isset($this->dbAdapter)) {
-            $data = array_merge(
-                StoreCatalog::$sys_entities,
+            $entityData = array_merge(
                 StoreCatalog::$entity_product,
                 StoreCatalog::$entity_category,
                 StoreCatalog::$entity_tag,
                 StoreCatalog::$entity_mainicon,
-                StoreCatalog::$entity_main_specific,
+                StoreCatalog::$entity_main_specific
+            );
+            $propData = array_merge(
                 StoreCatalog::$prop_tag,
                 StoreCatalog::$prop_product_category,
                 StoreCatalog::$prop_linked_url
             );
 
-            foreach ($data as $key => $value) {
-                $sql = new MultiInsertSql($this->dbAdapter, $key);
-                $tableGateway = new TableGateway($key, $this->dbAdapter, null, null, $sql);
-                $dataStore = new DbTable($tableGateway);
-                echo "create $key" . PHP_EOL;
-                $dataStore->create($value, true);
-            }
+            $this->addData(StoreCatalog::$type_entity_list, TypeEntityList::class);
+            $this->addData(StoreCatalog::$sys_entities, SysEntities::class);
+            $this->addData($entityData, DbTable::class);
+            $this->addData($propData, DbTable::class);
+        }
+    }
+    protected function addData(array $data, $dbTableClass)
+    {
+        if(!is_a($dbTableClass, DbTable::class, true)) {
+            throw new Exception("$dbTableClass not instance of " . DbTable::class);
+        }
+        foreach ($data as $key => $value) {
+            $sql = new MultiInsertSql($this->dbAdapter, $key);
+            $tableGateway = new TableGateway($key, $this->dbAdapter, null, null, $sql);
+            $dataStore = new $dbTableClass($tableGateway);
+            echo "create $key" . PHP_EOL;
+            $dataStore->create($value, true);
         }
     }
 
@@ -178,6 +200,8 @@ class CompoundInstaller extends InstallerAbstract
         return [
             DbInstaller::class,
             DataStoreMiddlewareInstaller::class,
+            DbTableInstaller::class,
+            HttpClientInstaller::class,
         ];
     }
 }

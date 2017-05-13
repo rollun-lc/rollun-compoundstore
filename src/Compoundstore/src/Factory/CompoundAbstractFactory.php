@@ -100,14 +100,14 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
         //'SuperEtity - 'entity_table_name_1-entity_table_name_1'
         if (strpos($requestedName, SuperEntity::INNER_JOIN)) {
             $compoundDataStores = $this->getCompoundStores($requestedName);
-            $compoundDataStoresObjests = [];
+            $compoundDataStoresObjects = [];
             foreach ($compoundDataStores as $compoundDataStore) {
-                $compoundDataStoresObjests[] = $this->getCompoundStore($db, $compoundDataStore);
-                $compoundDataStoresObjests[] = SuperEntity::INNER_JOIN;
+                $compoundDataStoresObjects[] = $this->getCompoundStore($db, $compoundDataStore);
+                $compoundDataStoresObjects[] = SuperEntity::INNER_JOIN;
             }
-            array_pop($compoundDataStoresObjests);
+            array_pop($compoundDataStoresObjects);
             $tableGateway = new TableGateway(SysEntities::TABLE_NAME, $db);
-            $result = new SuperEntity($tableGateway, $compoundDataStoresObjests);
+            $result = new SuperEntity($tableGateway, $compoundDataStoresObjects);
             return $result;
         }
         //'sys_entities' or 'entity_table_name' or 'prop_table_name'
@@ -115,6 +115,12 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
         return $this->getCompoundStore($db, $requestedName);
     }
 
+    /**
+     * @param AdapterInterface $db
+     * @param $requestedName
+     * @return Entity|Prop|SysEntities
+     * @throws DataStoreException
+     */
     public function getCompoundStore(AdapterInterface $db, $requestedName)
     {
         //$requestedName = 'sys_entities' or 'entity_table_name' or 'prop_table_name'
@@ -150,6 +156,10 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
         return count($locate) == 2 ? $locate[0] : static::DB_SERVICE_NAME;
     }
 
+    /**
+     * @param $requestedName
+     * @return array
+     */
     protected function getCompoundStores($requestedName)
     {
         if (strpos($requestedName, SuperEntity::INNER_JOIN)) {

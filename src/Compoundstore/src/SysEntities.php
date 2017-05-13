@@ -12,6 +12,7 @@ namespace rollun\compoundstore;
 use rollun\datastore\DataStore\DbTable;
 use rollun\datastore\DataStore\DataStoreException;
 use rollun\datastore\TableGateway\TableManagerMysql as TableManager;
+use Zend\Db\TableGateway\TableGateway;
 
 /**
  *
@@ -34,6 +35,8 @@ use rollun\datastore\TableGateway\TableManagerMysql as TableManager;
 class SysEntities extends DbTable
 {
 
+    const TYPE_ENTITY_LIST = TypeEntityList::TABLE_NAME;
+    const FILED_ENTITY_TYPE = TypeEntityList::DEF_ID;
     const TABLE_NAME = 'sys_entities';
     const ENTITY_PREFIX = 'entity_';
     const PROP_PREFIX = 'prop_';
@@ -41,6 +44,7 @@ class SysEntities extends DbTable
 
     public function prepareEntityCreate($entityName, $itemData, $rewriteIfExist)
     {
+        $this->prepareEntityType($entityName);
         $identifier = $this->getIdentifier();
         //What is it array of arrays?
         if (isset($itemData[$identifier]) && $rewriteIfExist) {
@@ -59,6 +63,15 @@ class SysEntities extends DbTable
         }
         $itemData[$identifier] = $sysItemInserted[$identifier];
         return $itemData;
+    }
+
+    protected function prepareEntityType($entityName){
+        $dbAdapter = $this->dbTable->getAdapter();
+        $tableTypeEntityList = new TableGateway(static::TYPE_ENTITY_LIST,$dbAdapter);
+        $dbTableTypeEntityList = new TypeEntityList($tableTypeEntityList);
+        if($dbTableTypeEntityList->has($entityName)) {
+            $dbTableTypeEntityList->create([static::FILED_ENTITY_TYPE => $entityName]);
+        }
     }
 
     public static function getEntityName($tableName)
@@ -92,7 +105,7 @@ class SysEntities extends DbTable
         return $deletedItemsCount;
     }
 
-    public static function getTableConfigProdaction()
+    public static function getTableConfigProduction()
     {
         return [
             SysEntities::TABLE_NAME => [
@@ -104,8 +117,15 @@ class SysEntities extends DbTable
                 ],
                 'entity_type' => [
                     TableManager::FIELD_TYPE => 'Varchar',
+                    TableManager::FOREIGN_KEY => [
+                        'referenceTable' => static::TYPE_ENTITY_LIST,
+                        'referenceColumn' => static::FILED_ENTITY_TYPE,
+                        'onDeleteRule' => 'cascade',
+                        'onUpdateRule' => null,
+                        'name' => null
+                    ],
                     TableManager::FIELD_PARAMS => [
-                        'length' => 100,
+                        'length' => 255,
                         'nullable' => false,
                     ],
                 ],

@@ -61,7 +61,7 @@
 Когда Вам захочется переобозначить `entity_product-entity_mainicon-entity_main_specific` коротким именем ресурса,   
 просто добавьте в конфиг файл:  
 
-    'services' => [
+    'dependencies' => [
         'aliases' => [
             'superproduct' =>
             'entity_product-entity_main_specific'

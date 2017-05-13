@@ -39,6 +39,13 @@ class StoreCatalog
     //'entity_main_specific'
     const MAIN_SPECIFIC_TABLE_NAME = SysEntities::ENTITY_PREFIX . 'main_specific';
 
+    public static $type_entity_list = [ "type_entity_list" =>
+        [
+            [ "entity_type" => "product_icon"],
+            [ "entity_type" => "product"],
+            [ "entity_type" => "tag"],
+            [ "entity_type" => "category"],
+        ]];
     public static $sys_entities = [ "sys_entities" =>
         [
             [ "id" => "17", "entity_type" => "product_icon", "add_date" => "2005-10-30 ", ],

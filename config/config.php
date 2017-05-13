@@ -11,6 +11,7 @@ $cacheConfig = [
 ];
 
 $aggregator = new ConfigAggregator([
+    \Zend\Session\ConfigProvider::class,
     \Zend\I18n\ConfigProvider::class,
     \Zend\Validator\ConfigProvider::class,
     \Zend\Filter\ConfigProvider::class,
