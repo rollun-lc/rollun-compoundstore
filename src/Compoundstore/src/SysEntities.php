@@ -105,7 +105,7 @@ class SysEntities extends DbTable
         return $deletedItemsCount;
     }
 
-    public static function getTableConfigProduction()
+    public static function getTableConfig()
     {
         return [
             SysEntities::TABLE_NAME => [

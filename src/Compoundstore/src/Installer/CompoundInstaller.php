@@ -98,8 +98,8 @@ class CompoundInstaller extends InstallerAbstract
                 //develop only
                 $tablesConfigDevelop = [
                     TableManager::KEY_TABLES_CONFIGS => array_merge(
-                        TypeEntityList::getTableConfigProduction(),
-                        SysEntities::getTableConfigProduction(),
+                        TypeEntityList::getTableConfig(),
+                        SysEntities::getTableConfig(),
                         StoreCatalog::$develop_tables_config
                     )
                 ];
@@ -119,8 +119,8 @@ class CompoundInstaller extends InstallerAbstract
             } else {
                 $tablesConfigProduction = [
                     TableManager::KEY_TABLES_CONFIGS => array_merge(
-                        TypeEntityList::getTableConfigProduction(),
-                        SysEntities::getTableConfigProduction()
+                        TypeEntityList::getTableConfig(),
+                        SysEntities::getTableConfig()
                     )
                 ];
                 $tableManager = new TableManager($this->dbAdapter, $tablesConfigProduction);

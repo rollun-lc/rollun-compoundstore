@@ -17,7 +17,7 @@ class TypeEntityList extends DbTable
     const TABLE_NAME = 'type_entity_list';
     const DEF_ID = 'entity_type';
 
-    public static function getTableConfigProduction()
+    public static function getTableConfig()
     {
         return [
             static::TABLE_NAME => [
