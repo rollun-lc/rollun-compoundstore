@@ -70,64 +70,13 @@ class CompoundInstaller extends InstallerAbstract
 
     public function uninstall()
     {
-        $this->dbAdapter = $this->container->get(CompoundAbstractFactory::DB_SERVICE_NAME);
-        if (isset($this->dbAdapter)) {
-            if (constant('APP_ENV') === 'dev') {
-                $tableManager = new TableManager($this->dbAdapter);
-                $tableManager->deleteTable(StoreCatalog::PROP_LINKED_URL_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::PROP_PRODUCT_CATEGORY_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::PROP_TAG_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::MAIN_SPECIFIC_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::MAINICON_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::PRODUCT_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::CATEGORY_TABLE_NAME);
-                $tableManager->deleteTable(StoreCatalog::TAG_TABLE_NAME);
-                $tableManager->deleteTable(SysEntities::TABLE_NAME);
-                $tableManager->deleteTable(TypeEntityList::TABLE_NAME);
-            } else {
-                $this->consoleIO->write('constant("APP_ENV") !== "dev" It has did nothing');
-            }
-        }
+
     }
 
     public function install()
     {
         $this->dbAdapter = $this->container->get('db');
         if (isset($this->dbAdapter)) {
-            if (constant('APP_ENV') === 'dev') {
-                //develop only
-                $tablesConfigDevelop = [
-                    TableManager::KEY_TABLES_CONFIGS => array_merge(
-                        TypeEntityList::getTableConfig(),
-                        SysEntities::getTableConfig(),
-                        StoreCatalog::$develop_tables_config
-                    )
-                ];
-                $tableManager = new TableManager($this->dbAdapter, $tablesConfigDevelop);
-
-                $tableManager->rewriteTable(TypeEntityList::TABLE_NAME);
-                $tableManager->rewriteTable(SysEntities::TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::PRODUCT_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::TAG_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::MAINICON_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::MAIN_SPECIFIC_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::CATEGORY_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::PROP_LINKED_URL_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::PROP_PRODUCT_CATEGORY_TABLE_NAME);
-                $tableManager->rewriteTable(StoreCatalog::PROP_TAG_TABLE_NAME);
-                $this->tableDataWrite();
-            } else {
-                $tablesConfigProduction = [
-                    TableManager::KEY_TABLES_CONFIGS => array_merge(
-                        TypeEntityList::getTableConfig(),
-                        SysEntities::getTableConfig()
-                    )
-                ];
-                $tableManager = new TableManager($this->dbAdapter, $tablesConfigProduction);
-
-                $tableManager->rewriteTable(TypeEntityList::TABLE_NAME);
-                $tableManager->createTable(SysEntities::TABLE_NAME);
-            }
             return [
                 'dependencies' => [
                     'aliases' => [
@@ -140,42 +89,6 @@ class CompoundInstaller extends InstallerAbstract
             ];
         }
         return [];
-    }
-
-    public function tableDataWrite()
-    {
-        if (isset($this->dbAdapter)) {
-            $entityData = array_merge(
-                StoreCatalog::$entity_product,
-                StoreCatalog::$entity_category,
-                StoreCatalog::$entity_tag,
-                StoreCatalog::$entity_mainicon,
-                StoreCatalog::$entity_main_specific
-            );
-            $propData = array_merge(
-                StoreCatalog::$prop_tag,
-                StoreCatalog::$prop_product_category,
-                StoreCatalog::$prop_linked_url
-            );
-
-            $this->addData(StoreCatalog::$type_entity_list, TypeEntityList::class);
-            $this->addData(StoreCatalog::$sys_entities, SysEntities::class);
-            $this->addData($entityData, DbTable::class);
-            $this->addData($propData, DbTable::class);
-        }
-    }
-    protected function addData(array $data, $dbTableClass)
-    {
-        if(!is_a($dbTableClass, DbTable::class, true)) {
-            throw new Exception("$dbTableClass not instance of " . DbTable::class);
-        }
-        foreach ($data as $key => $value) {
-            $sql = new MultiInsertSql($this->dbAdapter, $key);
-            $tableGateway = new TableGateway($key, $this->dbAdapter, null, null, $sql);
-            $dataStore = new $dbTableClass($tableGateway);
-            echo "create $key" . PHP_EOL;
-            $dataStore->create($value, true);
-        }
     }
 
     /**
