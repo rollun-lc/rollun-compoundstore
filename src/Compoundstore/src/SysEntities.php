@@ -36,7 +36,7 @@ class SysEntities extends DbTable
 {
 
     const TYPE_ENTITY_LIST = TypeEntityList::TABLE_NAME;
-    const FILED_ENTITY_TYPE = TypeEntityList::DEF_ID;
+    const FILED_ENTITY_TYPE = TypeEntityList::ID_FIELD;
     const TABLE_NAME = 'sys_entities';
     const ENTITY_PREFIX = 'entity_';
     const PROP_PREFIX = 'prop_';
@@ -69,7 +69,7 @@ class SysEntities extends DbTable
         $dbAdapter = $this->dbTable->getAdapter();
         $tableTypeEntityList = new TableGateway(static::TYPE_ENTITY_LIST,$dbAdapter);
         $dbTableTypeEntityList = new TypeEntityList($tableTypeEntityList);
-        if($dbTableTypeEntityList->has($entityName)) {
+        if(!$dbTableTypeEntityList->has($entityName)) {
             $dbTableTypeEntityList->create([static::FILED_ENTITY_TYPE => $entityName]);
         }
     }

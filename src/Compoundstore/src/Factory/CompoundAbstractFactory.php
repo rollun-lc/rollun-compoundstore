@@ -49,7 +49,7 @@ use Zend\Db\TableGateway\TableGateway;
  */
 class CompoundAbstractFactory extends DataStoreAbstractFactory
 {
-
+    const KEY = 'dataStore';
     const DB_SERVICE_NAME = 'compound db';
     const DB_NAME_DELIMITER = '~';
 
@@ -89,6 +89,7 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
+
         $dbAdapterName = $this->getDbAdapterName($requestedName);
         $db = $container->has($dbAdapterName) ? $container->get($dbAdapterName) : null;
         if (null === $db) {
@@ -102,7 +103,11 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
             $compoundDataStores = $this->getCompoundStores($requestedName);
             $compoundDataStoresObjects = [];
             foreach ($compoundDataStores as $compoundDataStore) {
-                $compoundDataStoresObjects[] = $this->getCompoundStore($db, $compoundDataStore);
+                $compoundDataStoresObjects[] = $this->getCompoundStore(
+                    $db,
+                    $compoundDataStore,
+                    $this->getOptions($container, $compoundDataStore, $options)
+                );
                 $compoundDataStoresObjects[] = SuperEntity::INNER_JOIN;
             }
             array_pop($compoundDataStoresObjects);
@@ -112,32 +117,7 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
         }
         //'sys_entities' or 'entity_table_name' or 'prop_table_name'
         $requestedName = $this->getCompoundStores($requestedName)[0];
-        return $this->getCompoundStore($db, $requestedName);
-    }
-
-    /**
-     * @param AdapterInterface $db
-     * @param $requestedName
-     * @return Entity|Prop|SysEntities
-     * @throws DataStoreException
-     */
-    public function getCompoundStore(AdapterInterface $db, $requestedName)
-    {
-        //$requestedName = 'sys_entities' or 'entity_table_name' or 'prop_table_name'
-        $tableGateway = new TableGateway($requestedName, $db);
-        //'sys_entities' or 'entity_table_name' or 'prop_table_name'
-        switch (explode('_', $requestedName)[0] . '_') {
-            case SysEntities::ENTITY_PREFIX :
-                return new Entity($tableGateway);
-            case SysEntities::PROP_PREFIX :
-                return new Prop($tableGateway);
-            case explode('_', SysEntities::TABLE_NAME)[0] . '_':
-                return new SysEntities($tableGateway);
-            default:
-                throw new DataStoreException(
-                    'Can\'t create service for ' . $requestedName
-                );
-        }
+        return $this->getCompoundStore($db, $requestedName, $this->getOptions($container, $requestedName, $options));
     }
 
     /**
@@ -176,5 +156,53 @@ class CompoundAbstractFactory extends DataStoreAbstractFactory
             $compoundDataStore = count($locate) == 1 ? $locate[0] : $locate[1];
             return [$compoundDataStore];
         }
+    }
+
+    /**
+     * @param AdapterInterface $db
+     * @param $requestedName
+     * @return Entity|Prop|SysEntities
+     * @throws DataStoreException
+     */
+    public function getCompoundStore(AdapterInterface $db, $requestedName, array $options = [])
+    {
+        //$requestedName = 'sys_entities' or 'entity_table_name' or 'prop_table_name'
+        $tableGateway = new TableGateway($requestedName, $db);
+        //'sys_entities' or 'entity_table_name' or 'prop_table_name'
+        switch (explode('_', $requestedName)[0] . '_') {
+            case SysEntities::ENTITY_PREFIX:
+                $class = isset($options[static::KEY_CLASS]) && is_a($options[static::KEY_CLASS], Entity::class, true) ?
+                    $options[static::KEY_CLASS] : Entity::class;
+                return new $class($tableGateway);
+            case SysEntities::PROP_PREFIX :
+                $class = isset($options[static::KEY_CLASS]) && is_a($options[static::KEY_CLASS], Prop::class, true) ?
+                    $options[static::KEY_CLASS] : Prop::class;
+                return new $class($tableGateway);
+            case explode('_', SysEntities::TABLE_NAME)[0] . '_':
+                return new SysEntities($tableGateway);
+            default:
+                throw new DataStoreException(
+                    'Can\'t create service for ' . $requestedName
+                );
+        }
+    }
+
+    /**
+     * @param ContainerInterface $container
+     * @param $requestedName
+     * @param array|null $options
+     * @return array
+     */
+    protected function getOptions(ContainerInterface $container, $requestedName, array $options = null)
+    {
+        if (empty($options)) {
+            $config = $container->get('config');
+            $serviceConfig = $config[static::KEY][$requestedName];
+        } else if (isset($options[$requestedName])) {
+            $serviceConfig = $options[$requestedName];
+        } else {
+            $serviceConfig = $options;
+        }
+        return $serviceConfig;
     }
 }
